@@ -1,0 +1,39 @@
+- name: Create Group in VM
+  hosts: internal
+  become: yes
+
+  tasks:
+
+    - name: Add group in VM
+      group:
+        name: "{{ group_name }}"
+        state: present
+
+    - name: Create user in group
+      user:
+        name: "{{ item }}"
+        create_home: yes
+        group: "{{ group_name }}"
+        shell: /bin/bash
+      with_items: "{{ user_list }}"
+
+    - name: Create directory for ssh keys
+      file:
+        path: "/home/{{ item }}/.ssh"
+        state: directory
+      with_items: "{{ user_list }}"
+
+
+    - name: Copy pubkey to VM
+      copy:
+        dest: "/home/{{ item }}/.ssh/authorized_keys"
+        src: "../ssh-keys/{{ item }}.id_rsa.pub"
+      with_items: "{{ user_list }}"
+
+
+
+
+
+
+
+

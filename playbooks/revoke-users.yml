@@ -1,0 +1,28 @@
+- name: Revoke user
+  become: true
+  hosts: internal
+
+  vars:
+    user_to_revoke:
+      - quyen
+
+
+  tasks:
+    - stat:
+        path: "/home/{{ item }}"
+      register: user_existed
+      with_items: "{{ user_to_revoke}}"
+
+    - debug: msg="user {{item.item }} with revoke={{item.stat.exists}}"
+      with_items: "{{ user_existed.results }}"
+
+    - name: Revoke
+      user:
+        name: "{{ item.item }}"
+        state: absent
+        move_home: yes
+      when: item.stat.exists == True
+      with_items: "{{ user_existed.results }}"
+
+
+
